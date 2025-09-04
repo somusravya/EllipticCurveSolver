@@ -26,7 +26,7 @@ pub type BossState {
 }
 
 // Check if a number is a perfect square
-fn is_perfect_square(n: Int) -> Bool {
+pub fn is_perfect_square(n: Int) -> Bool {
   case float.square_root(int.to_float(n)) {
     Ok(sqrt_n) -> {
       let int_sqrt = float.round(sqrt_n)
@@ -37,14 +37,14 @@ fn is_perfect_square(n: Int) -> Bool {
 }
 
 // Calculate sum of squares from start to start+k-1
-fn sum_of_squares(start: Int, k: Int) -> Int {
+pub fn sum_of_squares(start: Int, k: Int) -> Int {
   list.range(start, start + k - 1)
   |> list.map(fn(x) { x * x })
   |> list.fold(0, int.add)
 }
 
 // Find all solutions in a range for sequences of length k
-fn find_solutions_in_range(start_range: Int, end_range: Int, k: Int) -> List(Int) {
+pub fn find_solutions_in_range(start_range: Int, end_range: Int, k: Int) -> List(Int) {
   list.range(start_range, end_range)
   |> list.filter(fn(start) {
     let sum = sum_of_squares(start, k)
