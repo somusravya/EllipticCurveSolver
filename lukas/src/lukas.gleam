@@ -43,12 +43,62 @@ pub fn sum_of_squares(start: Int, k: Int) -> Int {
   |> list.fold(0, int.add)
 }
 
-// Find all solutions in a range for sequences of length k
+// Get square root if it's a perfect square, otherwise return None
+fn get_square_root(n: Int) -> Result(Int, Nil) {
+  case float.square_root(int.to_float(n)) {
+    Ok(sqrt_n) -> {
+      let int_sqrt = float.round(sqrt_n)
+      case int_sqrt * int_sqrt == n {
+        True -> Ok(int_sqrt)
+        False -> Error(Nil)
+      }
+    }
+    Error(_) -> Error(Nil)
+  }
+}
+
+// Print detailed calculation for a single starting point
+fn print_calculation_detail(start: Int, k: Int) -> Bool {
+  let numbers = list.range(start, start + k - 1)
+  let squares = list.map(numbers, fn(x) { x * x })
+  let sum = list.fold(squares, 0, int.add)
+  
+  // Print the calculation
+  let numbers_str = list.map(numbers, int.to_string) |> list.fold("", fn(acc, x) { 
+    case acc {
+      "" -> x
+      _ -> acc <> " + " <> x
+    }
+  })
+  
+  let squares_str = list.map(squares, int.to_string) |> list.fold("", fn(acc, x) { 
+    case acc {
+      "" -> x
+      _ -> acc <> " + " <> x
+    }
+  })
+  
+  io.print("s = " <> int.to_string(start) <> " → ")
+  io.print(numbers_str <> "² = ")
+  io.print(squares_str <> " = " <> int.to_string(sum))
+  
+  case get_square_root(sum) {
+    Ok(sqrt_val) -> {
+      io.println(" = " <> int.to_string(sqrt_val) <> "² (PERFECT SQUARE)")
+      True
+    }
+    Error(_) -> {
+      io.println(" (not a perfect square)")
+      False
+    }
+  }
+}
+
+// Find all solutions in a range for sequences of length k with verbose output
 pub fn find_solutions_in_range(start_range: Int, end_range: Int, k: Int) -> List(Int) {
   list.range(start_range, end_range)
   |> list.filter(fn(start) {
-    let sum = sum_of_squares(start, k)
-    is_perfect_square(sum)
+    print_calculation_detail(start, k)
   })
 }
 
@@ -91,7 +141,25 @@ fn boss_message_handler(state: BossState, message: BossMessage) -> actor.Next(Bo
   }
 }
 
-// Create workers and distribute work
+// Sequential processing with verbose output (for small problems)
+fn process_sequential(n: Int, k: Int) -> Nil {
+  io.println("\nHere N = " <> int.to_string(n) <> ", k = " <> int.to_string(k) <> ".")
+  io.println("We check starting points s = 1.." <> int.to_string(n) <> ".\n")
+  io.println("Step by step:\n")
+  
+  let solutions = find_solutions_in_range(1, n, k)
+  
+  io.println("\nSummary:")
+  case solutions {
+    [] -> io.println("No perfect square solutions found.")
+    _ -> {
+      io.println("Perfect square solutions found at starting points:")
+      list.each(solutions, fn(s) { io.println(int.to_string(s)) })
+    }
+  }
+}
+
+// Create workers and distribute work (for large problems)
 fn distribute_work(n: Int, k: Int, work_unit_size: Int) -> Result(Nil, String) {
   let num_workers = case n / work_unit_size {
     0 -> 1
@@ -140,13 +208,20 @@ pub fn main() -> Nil {
     [n_str, k_str] -> {
       case int.parse(n_str), int.parse(k_str) {
         Ok(n), Ok(k) -> {
-          // Use work unit size of 1000 for good balance
-          let work_unit_size = 1000
-          
-          case distribute_work(n, k, work_unit_size) {
-            Ok(_) -> Nil
-            Error(msg) -> {
-              io.println_error("Error: " <> msg)
+          // For small problems (n <= 20), use verbose sequential processing
+          // For larger problems, use parallel actor model
+          case n <= 20 {
+            True -> process_sequential(n, k)
+            False -> {
+              // Use work unit size of 1000 for good balance
+              let work_unit_size = 1000
+              
+              case distribute_work(n, k, work_unit_size) {
+                Ok(_) -> Nil
+                Error(msg) -> {
+                  io.println_error("Error: " <> msg)
+                }
+              }
             }
           }
         }
