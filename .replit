@@ -4,3 +4,26 @@ expertMode = true
 [nix]
 channel = "stable-25_05"
 packages = ["gleam", "erlang"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Demo"
+
+[[workflows.workflow]]
+name = "Demo"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd lukas && gleam run -- 20 2"
+
+[workflows.workflow.metadata]
+outputType = "console"
