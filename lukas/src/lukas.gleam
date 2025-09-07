@@ -138,7 +138,8 @@ pub fn find_solutions_in_range_quiet(start_range: Int, end_range: Int, k: Int) -
 fn worker_message_handler(state: Nil, message: WorkerMessage) -> actor.Next(Nil, WorkerMessage) {
   case message {
     ComputeRange(start, end, k, boss) -> {
-      let solutions = find_solutions_in_range(start, end, k)
+      // Use verbose output to show detailed calculation steps
+      let solutions = find_solutions_in_range_verbose(start, end, k)
       process.send(boss, Result(solutions))
       process.send(boss, WorkerDone)
       actor.continue(state)
@@ -174,7 +175,6 @@ fn boss_message_handler(state: BossState, message: BossMessage) -> actor.Next(Bo
           io.println("\n🔍 DETAILED CALCULATION STEPS:")
           io.println("===============================")
           io.println("We check starting points s = 1.." <> int.to_string(state.n) <> ".\n")
-          io.println("[Parallel processing - individual steps not shown for large datasets]\n")
           
           print_performance_metrics(metrics)
           actor.stop()

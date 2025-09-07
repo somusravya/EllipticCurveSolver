@@ -1,0 +1,48 @@
+Starting parallel processing with 1 workers...
+Problem size: N = 40, k = 2
+s = 1 → 1 + 2² = 1 + 4 = 5 (not a perfect square)
+s = 2 → 2 + 3² = 4 + 9 = 13 (not a perfect square)
+s = 3 → 3 + 4² = 9 + 16 = 25 = 5² (PERFECT SQUARE)
+s = 4 → 4 + 5² = 16 + 25 = 41 (not a perfect square)
+s = 5 → 5 + 6² = 25 + 36 = 61 (not a perfect square)
+s = 6 → 6 + 7² = 36 + 49 = 85 (not a perfect square)
+s = 7 → 7 + 8² = 49 + 64 = 113 (not a perfect square)
+s = 8 → 8 + 9² = 64 + 81 = 145 (not a perfect square)
+s = 9 → 9 + 10² = 81 + 100 = 181 (not a perfect square)
+s = 10 → 10 + 11² = 100 + 121 = 221 (not a perfect square)
+s = 11 → 11 + 12² = 121 + 144 = 265 (not a perfect square)
+s = 12 → 12 + 13² = 144 + 169 = 313 (not a perfect square)
+s = 13 → 13 + 14² = 169 + 196 = 365 (not a perfect square)
+s = 14 → 14 + 15² = 196 + 225 = 421 (not a perfect square)
+s = 15 → 15 + 16² = 225 + 256 = 481 (not a perfect square)
+s = 16 → 16 + 17² = 256 + 289 = 545 (not a perfect square)
+s = 17 → 17 + 18² = 289 + 324 = 613 (not a perfect square)
+s = 18 → 18 + 19² = 324 + 361 = 685 (not a perfect square)
+s = 19 → 19 + 20² = 361 + 400 = 761 (not a perfect square)
+s = 20 → 20 + 21² = 400 + 441 = 841 = 29² (PERFECT SQUARE)
+s = 21 → 21 + 22² = 441 + 484 = 925 (not a perfect square)
+s = 22 → 22 + 23² = 484 + 529 = 1013 (not a perfect square)
+s = 23 → 23 + 24² = 529 + 576 = 1105 (not a perfect square)
+s = 24 → 24 + 25² = 576 + 625 = 1201 (not a perfect square)
+s = 25 → 25 + 26² = 625 + 676 = 1301 (not a perfect square)
+s = 26 → 26 + 27² = 676 + 729 = 1405 (not a perfect square)
+s = 27 → 27 + 28² = 729 + 784 = 1513 (not a perfect square)
+s = 28 → 28 + 29² = 784 + 841 = 1625 (not a perfect square)
+s = 29 → 29 + 30² = 841 + 900 = 1741 (not a perfect square)
+s = 30 → 30 + 31² = 900 + 961 = 1861 (not a perfect square)
+s = 31 → 31 + 32² = 961 + 1024 = 1985 (not a perfect square)
+s = 32 → 32 + 33² = 1024 + 1089 = 2113 (not a perfect square)
+s = 33 → 33 + 34² = 1089 + 1156 = 2245 (not a perfect square)
+s = 34 → 34 + 35² = 1156 + 1225 = 2381 (not a perfect square)
+s = 35 → 35 + 36² = 1225 + 1296 = 2521 (not a perfect square)
+s = 36 → 36 + 37² = 1296 + 1369 = 2665 (not a perfect square)
+s = 37 → 37 + 38² = 1369 + 1444 = 2813 (not a perfect square)
+s = 38 → 38 + 39² = 1444 + 1521 = 2965 (not a perfect square)
+s = 39 → 39 + 40² = 1521 + 1600 = 3121 (not a perfect square)
+s = 40 → 40 + 41² = 1600 + 1681 = 3281 (not a perfect square)
+
+🔍 DETAILED CALCULATION STEPS:
+===============================
+We check starting points s = 1..40.
+
+[Parallel processing - individual steps not shown for large datasets]
