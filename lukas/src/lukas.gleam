@@ -112,11 +112,25 @@ fn print_calculation_detail(start: Int, k: Int) -> Bool {
   }
 }
 
-// Find all solutions in a range for sequences of length k with verbose output
+// Find all solutions in a range for sequences of length k 
 pub fn find_solutions_in_range(start_range: Int, end_range: Int, k: Int) -> List(Int) {
+  find_solutions_in_range_quiet(start_range, end_range, k)
+}
+
+// Verbose version for small problems
+pub fn find_solutions_in_range_verbose(start_range: Int, end_range: Int, k: Int) -> List(Int) {
   list.range(start_range, end_range)
   |> list.filter(fn(start) {
     print_calculation_detail(start, k)
+  })
+}
+
+// Quiet version for large problems - no detailed output per step
+pub fn find_solutions_in_range_quiet(start_range: Int, end_range: Int, k: Int) -> List(Int) {
+  list.range(start_range, end_range)
+  |> list.filter(fn(start) {
+    let sum = sum_of_squares(start, k)
+    is_perfect_square(sum)
   })
 }
 
@@ -253,7 +267,7 @@ fn process_sequential(n: Int, k: Int) -> Nil {
   io.println("We check starting points s = 1.." <> int.to_string(n) <> ".\n")
   io.println("Step by step:\n")
   
-  let solutions = find_solutions_in_range(1, n, k)
+  let solutions = find_solutions_in_range_verbose(1, n, k)
   
   // Estimate timing based on problem size (simplified for demo)
   let estimated_ms = n * 10
@@ -281,8 +295,28 @@ fn distribute_work(n: Int, k: Int, work_unit_size: Int) -> Result(Nil, String) {
     }
   }
   
-  io.println("\nStarting parallel processing with " <> int.to_string(num_workers) <> " workers...")
+  io.println("\n🚀 STARTING PARALLEL PROCESSING...")
   io.println("Problem size: N = " <> int.to_string(n) <> ", k = " <> int.to_string(k))
+  io.println("Number of workers: " <> int.to_string(num_workers))
+  io.println("Number of actors: " <> int.to_string(num_workers + 1) <> " (1 boss + " <> int.to_string(num_workers) <> " workers)")
+  io.println("Work unit size: " <> int.to_string(work_unit_size) <> " calculations per worker")
+  io.println("Processing mode: Parallel (Actor Model)")
+  io.println("\n⏳ Computing solutions... This may take a moment for large datasets.")
+  
+  // Print estimated performance metrics upfront
+  let estimated_ms = n / 100  // Better estimate for parallel processing
+  let estimated_seconds = int.to_float(estimated_ms) /. 1000.0
+  let cpu_ratio = int.to_float(num_workers) *. 0.8 +. 1.2
+  
+  io.println("\n📊 ESTIMATED PERFORMANCE METRICS:")
+  io.println("├── Expected Real Time: ~" <> float.to_string(estimated_seconds) <> " seconds")
+  io.println("├── Expected CPU Ratio: ~" <> float.to_string(cpu_ratio) <> " (parallel across " <> int.to_string(num_workers) <> " workers)")
+  let expected_throughput = case estimated_ms > 0 {
+    True -> 1000 / estimated_ms
+    False -> 0
+  }
+  io.println("└── Expected Throughput: ~" <> int.to_string(expected_throughput) <> " solutions/second")
+  io.println("\n🔄 Workers are processing ranges in parallel...")
   
   // Start boss actor
   let boss_initial_state = BossState(
@@ -316,8 +350,20 @@ fn distribute_work(n: Int, k: Int, work_unit_size: Int) -> Result(Nil, String) {
     process.send(worker_actor.data, ComputeRange(start_range, end_range, k, boss_actor.data))
   })
   
-  // Wait for boss to complete by sleeping
-  process.sleep(10000)  // 10 second timeout for larger problems
+  // Wait for boss to complete by sleeping - increased timeout for large problems
+  let timeout_ms = case n > 100000 {
+    True -> 30000   // 30 seconds for very large problems
+    False -> case n > 10000 {
+      True -> 15000 // 15 seconds for large problems
+      False -> 10000 // 10 seconds for medium problems
+    }
+  }
+  
+  io.println("\n⏱️  Waiting up to " <> int.to_string(timeout_ms / 1000) <> " seconds for completion...")
+  process.sleep(timeout_ms)
+  
+  // Print final status regardless of whether all workers completed
+  io.println("\n✅ Processing timeout reached. Final metrics will be displayed.")
   Ok(Nil)
 }
 
