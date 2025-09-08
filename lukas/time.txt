@@ -1,20 +1,20 @@
-   Compiled in 0.03s
+   Compiled in 0.02s
     Running lukas.main
-        5.19 real         5.93 user         4.92 sys
-           133070848  maximum resident set size
+       30.15 real        30.57 user        30.11 sys
+           160743424  maximum resident set size
                    0  average shared memory size
                    0  average unshared data size
                    0  average unshared stack size
-               17375  page reclaims
-                  24  page faults
+               59045  page reclaims
+                  25  page faults
                    0  swaps
                    0  block input operations
                    0  block output operations
                    1  messages sent
                    0  messages received
                    0  signals received
-                7550  voluntary context switches
-             1446938  involuntary context switches
-           242491394  instructions retired
-            75193697  cycles elapsed
-             5948736  peak memory footprint
+              212089  voluntary context switches
+             7629445  involuntary context switches
+           215600304  instructions retired
+            70445047  cycles elapsed
+             6439248  peak memory footprint
