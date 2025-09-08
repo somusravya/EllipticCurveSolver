@@ -400,12 +400,12 @@ pub fn main() -> Nil {
           case n <= 5 {
             True -> process_sequential(n, k)
             False -> {
-              // Always use parallel processing with appropriate work unit sizes
+              // Always use parallel processing with very small work units to force multiple workers
               let work_unit_size = case n > 10000 {
-                True -> 2000  // Larger chunks for very big problems
+                True -> 1000  // Smaller chunks for big problems to get more workers
                 False -> case n > 1000 {
-                  True -> 500   // Medium chunks for medium problems  
-                  False -> 50   // Small chunks to ensure multiple workers even for small N
+                  True -> 200   // Smaller chunks for medium problems  
+                  False -> 10   // Very small chunks to force many workers even for tiny N
                 }
               }
               
