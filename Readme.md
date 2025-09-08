@@ -70,11 +70,16 @@ This application boasts several key features and achieves important performance 
 ## 3. Installation & Setup
 
 ### Gleam Installation
-*   **In Replit Environment**: Gleam is **automatically available**; no manual installation is needed.
+# Installing Gleam
+
+## macOS (Homebrew)
+```bash
+brew install gleam
+
 *   **For Local Development**: Instructions would typically be provided here for local setup.
 
 ### Project Setup
-After installing Gleam, you would then set up the project (e.g., download or clone the repository).
+After installing Gleam, you would then set up the project .
 
 ### Dependencies
 This project relies on several key packages:
