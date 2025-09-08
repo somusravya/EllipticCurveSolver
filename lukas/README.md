@@ -1,223 +1,188 @@
-# Lukas - Consecutive Square Sums Solver
+# Lukas — Parallel Perfect Square Finder (Merged README)
 
-A Gleam implementation that uses the actor model to find perfect squares that are sums of consecutive squares, optimized for multi-core execution.
+A Gleam application that uses the BEAM VM’s actor model (boss–worker pattern) to find starting points **s** such that
+`s² + (s+1)² + … + (s+k−1)²` is a perfect square. Designed for efficient multi‑core execution.  
 
-## Problem Description
+---
 
-This program solves the mathematical problem of finding sequences of k consecutive integers starting from 1 to N, where the sum of their squares equals a perfect square.
+## Overview
 
-### Examples:
-- **Pythagorean Identity**: 3² + 4² = 9 + 16 = 25 = 5²
-- **Lucas' Square Pyramid**: 1² + 2² + ... + 24² = 70²
+- **Language/Runtime:** Gleam → Erlang bytecode on the **BEAM** (Erlang/OTP), using OTP actors for concurrency and fault tolerance.  
+- **Architecture:** **Boss** actor coordinates multiple **Worker** actors to process disjoint ranges in parallel and collect results.  
+- **Problem:** For inputs **N** and **k**, search `s ∈ [1..N]` where the sum of **k** consecutive squares starting at `s` is a perfect square.  
+- **Output:** Print all valid `s` values; optionally write performance metrics to a file.
+
+---
+
+## Problem & Examples
+
+- **Goal:** Find all `s` where `s² + (s+1)² + … + (s+k−1)²` is a perfect square.  
+- **Examples:**  
+  - `3² + 4² = 25 = 5²`  
+  - `1² + 2² + … + 24² = 70²` (Lucas’ square pyramid)
+
+---
+
+## Features
+
+- Parallel search via OTP **actors** (lightweight BEAM processes)
+- Boss–worker scheduling with even range partitioning
+- Configurable **work unit size** and worker count
+- Clear CLI with **verbose** steps for small N and concise output for large N
+- Optional **metrics file** (name: `metrics_N{N}_k{k}.txt`) capturing timing and throughput
+
+---
 
 ## Requirements
 
-- **Language**: Gleam (functional language on the BEAM VM)
-- **Concurrency**: Exclusively uses actor model for parallelism
-- **Runtime**: Erlang/OTP 27.0+
-- **Architecture**: Boss-worker pattern with multiple actors
+- **Erlang/OTP:** 27.0+  
+- **Gleam:** latest stable recommended  
+- **Dependencies:**  
+  - `gleam_stdlib` – core library  
+  - `gleam_otp` – OTP actors  
+  - `gleam_erlang` – Erlang interop  
+  - `argv` – CLI argument parsing  
+  - `simplifile` – file I/O for metrics (if metrics enabled)  
 
-## Installation & Setup
+Dev: `gleeunit` for tests.
 
-1. **Install Dependencies**:
-   ```bash
-   cd lukas
-   gleam deps download
-   ```
+---
 
-2. **Build Project**:
-   ```bash
-   gleam build
-   ```
+## Installation
 
-3. **Run Program**:
-   ```bash
-   gleam run <N> <k>
-   ```
+### Local (Linux/macOS/WSL)
+
+1) Install Gleam (or use your package manager):  
+```bash
+# Example manual install (Linux):
+curl -sSL https://github.com/gleam-lang/gleam/releases/latest/download/gleam-x86_64-unknown-linux-musl.tar.gz | tar -xz
+sudo mv gleam /usr/local/bin/
+```
+
+2) Build:  
+```bash
+cd lukas
+gleam build
+```
+
+### Replit
+Gleam is typically preinstalled; open the project and run the commands below.
+
+---
 
 ## Usage
 
+Run with **N** and **k**:
 ```bash
-# Find sequences of length 2 with start points from 1 to 3
-gleam run 3 2
-# Output: 3
-
-# Find sequences of length 24 with start points from 1 to 40  
-gleam run 40 24
-# Output: 1
-
-# Performance benchmark
-gleam run 1000000 4
+gleam run -- <N> <k>
 ```
 
-## Actor Model Implementation
+**Examples**
+```bash
+# Small demo (prints detailed steps for N ≤ 100)
+gleam run -- 25 2
 
-### Architecture Components
+# Find s for k = 24 within 1..40
+gleam run -- 40 24
 
-1. **Boss Actor**
-   - Coordinates work distribution across multiple workers
-   - Collects results from all worker actors
-   - Manages actor lifecycle and synchronization
-   - Outputs final sorted results
-
-2. **Worker Actors**
-   - Process assigned ranges independently
-   - Perform mathematical computations in parallel
-   - Send results back to boss actor
-   - Enable multi-core utilization
-
-3. **Message Types**
-   ```gleam
-   pub type WorkerMessage {
-     ComputeRange(start: Int, end: Int, k: Int, boss: Subject(BossMessage))
-     Shutdown
-   }
-
-   pub type BossMessage {
-     Result(solutions: List(Int))
-     WorkerDone
-   }
-   ```
-
-### Work Distribution Strategy
-
-- **Work Unit Size**: 1000 (configurable for performance tuning)
-- **Number of Workers**: Automatically calculated based on problem size
-- **Load Balancing**: Even distribution of ranges across available workers
-- **Fault Tolerance**: Built on Erlang/OTP supervision principles
-
-## Performance Analysis
-
-### Work Unit Size Optimization
-
-After testing various work unit sizes, **1000** provides the optimal balance between:
-- **Work Distribution Overhead**: Minimal actor creation/communication costs
-- **Parallel Processing Efficiency**: Good utilization of available CPU cores
-- **Memory Usage**: Reasonable memory footprint per worker
-
-### Benchmark Results: `lukas 1000000 4`
-
-```
-Real Time: 6.316s
-User Time: 0.699s  
-System Time: 0.531s
-CPU Time to Real Time Ratio: ~1.23
+# Stress test
+gleam run -- 1000000 4
 ```
 
-**Analysis**:
-- **Effective Parallelism**: The ratio shows ~1.23x CPU utilization, indicating effective use of multiple cores
-- **Actor Overhead**: Minimal overhead from actor message passing
-- **Scalability**: Linear performance scaling with problem size
+---
 
-### Largest Problem Solved
+## Architecture (Actor Model)
 
-Successfully tested with:
-- **N = 10,000,000, k = 4**: Completes without issues
-- **Memory Usage**: Scales efficiently with problem size
-- **Actor System**: Handles hundreds of worker actors seamlessly
+```
+┌─────────────┐
+│ Boss Actor  │ ← Coordinates workers, collects results
+└─────────────┘
+       │
+   ┌───┴──┬──────┬──────┬──────┐
+   │      │      │      │      │
+┌──▼──┐ ┌─▼──┐ ┌─▼──┐ ┌─▼──┐ ┌─▼──┐
+│Work1│ │Work2│ │Work3│ │Work4│ │...│
+└─────┘ └────┘ └────┘ └────┘ └────┘
+```
 
-## Mathematical Algorithm
+**Message types (abridged):**
+```gleam
+pub type WorkerMessage {
+  ComputeRange(start: Int, end: Int, k: Int, boss: Subject(BossMessage))
+  Shutdown
+}
 
-### Core Functions
+pub type BossMessage {
+  Result(solutions: List(Int))
+  WorkerDone
+}
+```
 
-1. **Perfect Square Detection**:
-   ```gleam
-   fn is_perfect_square(n: Int) -> Bool {
-     case float.square_root(int.to_float(n)) {
-       Ok(sqrt_n) -> {
-         let int_sqrt = float.round(sqrt_n)
-         int_sqrt * int_sqrt == n
-       }
-       Error(_) -> False
-     }
-   }
-   ```
+---
 
-2. **Sum of Consecutive Squares**:
-   ```gleam
-   fn sum_of_squares(start: Int, k: Int) -> Int {
-     list.range(start, start + k - 1)
-     |> list.map(fn(x) { x * x })
-     |> list.fold(0, int.add)
-   }
-   ```
+## Algorithm & Logic
 
-3. **Range Processing**:
-   ```gleam
-   fn find_solutions_in_range(start_range: Int, end_range: Int, k: Int) -> List(Int) {
-     list.range(start_range, end_range)
-     |> list.filter(fn(start) {
-       let sum = sum_of_squares(start, k)
-       is_perfect_square(sum)
-     })
-   }
-   ```
+- For each `s` from `1..N`, compute `sum = s² + (s+1)² + … + (s+k−1)²` and test if `sum` is a perfect square.  
+- Optimizations: (1) efficient perfect‑square check via `sqrt` + integer check, (2) actor‑based range partitioning, (3) direct summation or formula‑based equivalents.
+
+**Example (N=25, k=2):**  
+`s=3: 3² + 4² = 9 + 16 = 25 = 5² ✓`  
+`s=20: 20² + 21² = 400 + 441 = 841 = 29² ✓`
+
+---
+
+## Parallelism & Work Distribution
+
+- **Workers:** computed from `N` and `work_unit_size` (last worker takes the remainder).  
+- **Work unit size:** configurable. Many runs use **1000** as a balanced default; an adaptive heuristic like `{≤1000→10, ≤10000→200, >10000→1000}` also works well.  
+- **Sequential vs parallel:** tiny inputs may run sequentially for clarity; larger inputs run in parallel for speed.
+
+---
+
+## Performance & Benchmarks
+
+- Example benchmark (`gleam run 1000000 4`) observed on a sample machine:  
+  - Real: ~6.316s, User: ~0.699s, Sys: ~0.531s → CPU/Real ≈ **1.23**  
+- Metrics categories you may track:
+  - **Real time** (wall‑clock), **CPU time**, **throughput**, **#actors** (1 boss + N workers).  
+- A simple model for **CPU/Real** is `workers × efficiency (≈0.85)`; values > 1.0 indicate meaningful parallelism.  
+- For large N, the app prints a concise summary; for small N it can print step‑by‑step calculations.
+
+---
+
+## Output & Metrics File
+
+When enabled, a metrics report is written after completion:
+
+- **Name:** `metrics_N{N}_k{k}.txt` (e.g., `metrics_N25_k2.txt`, `metrics_N2000_k3.txt`)  
+- **Contents (example):** problem configuration, actor/worker counts, timings, throughput, and discovered solutions.  
+- **Location:** project root (Replit: project root; Local: executable directory).
+
+---
 
 ## Project Structure
 
 ```
 lukas/
-├── src/
-│   └── lukas.gleam          # Main implementation
-├── test/
-│   └── lukas_test.gleam     # Test suite
-├── gleam.toml               # Project configuration
-├── manifest.toml            # Dependency lock file
-└── README.md                # This documentation
+├── src/                # Main implementation
+├── test/               # Test suite
+├── gleam.toml          # Project configuration
+├── manifest.toml       # Dependency lock file
+└── README.md
 ```
 
-## Dependencies
-
-- **gleam_stdlib**: Core Gleam standard library
-- **gleam_otp**: Actor model and OTP functionality
-- **gleam_erlang**: Erlang interoperability
-- **argv**: Command line argument parsing
-- **gleeunit**: Testing framework (dev only)
-
-## Example Outputs
-
-### Small Test Cases
-```bash
-$ gleam run 3 2
-3
-
-$ gleam run 40 24  
-1
-9
-20
-25
-```
-
-### Performance Verification
-```bash
-$ time gleam run 1000000 4
-# Results in ~6.3 seconds with multi-core utilization
-```
-
-## Key Features
-
-- ✅ **Exclusive Actor Usage**: No threads, processes, or other parallelism
-- ✅ **Type Safety**: Full Gleam type safety throughout
-- ✅ **Fault Tolerance**: Built on proven Erlang/OTP principles
-- ✅ **Scalability**: Efficient multi-core CPU utilization
-- ✅ **Performance**: Optimized work distribution and minimal overhead
-- ✅ **Clean Architecture**: Separation of concerns between coordination and computation
+---
 
 ## Development
 
-### Running Tests
-```bash
-gleam test
-```
+- Run tests: `gleam test`  
+- Build (prod): `gleam build --target erlang`  
+- Performance tuning: adjust `work_unit_size` (and optionally chunking heuristic) to match your hardware.
 
-### Building for Production
-```bash
-gleam build --target erlang
-```
+---
 
-### Performance Tuning
-Modify the `work_unit_size` variable in `distribute_work()` function to optimize for different hardware configurations.
+## Notes
 
-## Author
+- The design leverages BEAM’s preemptive schedulers and “let‑it‑crash” philosophy via supervisors for resilience.  
+- Scales to large **N** with many workers; memory use and actor overhead remain modest on typical machines.
 
-Built with Gleam's actor model for efficient parallel computation on the BEAM virtual machine.

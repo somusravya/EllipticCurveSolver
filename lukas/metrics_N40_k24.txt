@@ -1,0 +1,26 @@
+PERFORMANCE METRICS REPORT
+==========================
+
+Problem Configuration:
+- N (upper limit): 40
+- k (sequence length): 24
+
+System Architecture:
+- Processing Mode: Parallel (Actor Model)
+- Number of Actors: 5
+- Number of Workers: 4
+
+Performance Results:
+- Real Time: 0.0 seconds
+- CPU Time / Real Time Ratio: 3.4
+- Throughput: 0 solutions/second
+
+Results:
+- Perfect squares found: 4
+- Starting points: 1, 9, 20, 25
+
+Detailed Solutions:
+s=1 → 1² + 2² + 3² + 4² + 5² + 6² + 7² + 8² + 9² + 10² + 11² + 12² + 13² + 14² + 15² + 16² + 17² + 18² + 19² + 20² + 21² + 22² + 23² + 24² = 4900 = 70²
+s=9 → 9² + 10² + 11² + 12² + 13² + 14² + 15² + 16² + 17² + 18² + 19² + 20² + 21² + 22² + 23² + 24² + 25² + 26² + 27² + 28² + 29² + 30² + 31² + 32² = 11236 = 106²
+s=20 → 20² + 21² + 22² + 23² + 24² + 25² + 26² + 27² + 28² + 29² + 30² + 31² + 32² + 33² + 34² + 35² + 36² + 37² + 38² + 39² + 40² + 41² + 42² + 43² = 24964 = 158²
+s=25 → 25² + 26² + 27² + 28² + 29² + 30² + 31² + 32² + 33² + 34² + 35² + 36² + 37² + 38² + 39² + 40² + 41² + 42² + 43² + 44² + 45² + 46² + 47² + 48² = 33124 = 182²
