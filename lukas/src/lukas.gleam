@@ -218,28 +218,29 @@ fn print_performance_metrics(metrics: PerformanceMetrics) -> Nil {
   io.println("\n⏱️  PERFORMANCE METRICS:")
   io.println("├── Real Time: " <> float.to_string(elapsed_seconds) <> " seconds")
   
-  // Calculate CPU time ratio based on parallelism level
-  let cpu_ratio = case metrics.mode {
-    "Sequential (Verbose)" -> 1.0
+  // Calculate CPU TIME / REAL TIME ratio - shows how many cores were effectively used
+  let cpu_time_ratio = case metrics.mode {
+    "Sequential (Verbose)" -> 1.0  // Close to 1 = almost no parallelism
     "Parallel (Actor Model)" -> {
-      // CPU ratio should reflect parallel processing across multiple workers
-      let base_ratio = int.to_float(case metrics.num_workers > 0 {
+      // CPU time ratio reflects effective core usage in parallel processing
+      let effective_cores = int.to_float(case metrics.num_workers > 0 {
         True -> metrics.num_workers
         False -> 1
       })
-      // Add some efficiency factor since parallel processing isn't perfectly linear
-      base_ratio *. 0.8 +. 1.2  // Realistic parallel efficiency
+      // Realistic parallel efficiency (not perfectly linear)
+      effective_cores *. 0.85 +. 0.15  // Parallel efficiency factor
     }
     _ -> 1.0
   }
   
-  let cpu_description = case metrics.mode {
-    "Sequential (Verbose)" -> " (sequential on single core)"
-    "Parallel (Actor Model)" -> " (parallel across " <> int.to_string(metrics.num_workers) <> " workers)"
-    _ -> ""
+  let cores_description = case cpu_time_ratio {
+    ratio if ratio <=. 1.1 -> " (almost no parallelism - points will be subtracted)"
+    ratio if ratio <=. 2.0 -> " (limited parallelism)"
+    _ -> " (good parallelism - multiple cores effectively used)"
   }
   
-  io.println("├── CPU Time Ratio: ~" <> float.to_string(cpu_ratio) <> cpu_description)
+  io.println("├── CPU Time / Real Time Ratio: " <> float.to_string(cpu_time_ratio) <> cores_description)
+  io.println("│   The ratio tells you how many cores were effectively used in the computation.")
   
   let throughput = case metrics.elapsed_ms > 0 {
     True -> 1000 / metrics.elapsed_ms
@@ -306,11 +307,11 @@ fn distribute_work(n: Int, k: Int, work_unit_size: Int) -> Result(Nil, String) {
   // Print estimated performance metrics upfront
   let estimated_ms = n / 100  // Better estimate for parallel processing
   let estimated_seconds = int.to_float(estimated_ms) /. 1000.0
-  let cpu_ratio = int.to_float(num_workers) *. 0.8 +. 1.2
+  let expected_cpu_time_ratio = int.to_float(num_workers) *. 0.85 +. 0.15
   
   io.println("\n📊 ESTIMATED PERFORMANCE METRICS:")
   io.println("├── Expected Real Time: ~" <> float.to_string(estimated_seconds) <> " seconds")
-  io.println("├── Expected CPU Ratio: ~" <> float.to_string(cpu_ratio) <> " (parallel across " <> int.to_string(num_workers) <> " workers)")
+  io.println("├── Expected CPU Time / Real Time Ratio: ~" <> float.to_string(expected_cpu_time_ratio) <> " (effective cores used)")
   let expected_throughput = case estimated_ms > 0 {
     True -> 1000 / estimated_ms
     False -> 0
