@@ -395,15 +395,18 @@ pub fn main() -> Nil {
     [n_str, k_str] -> {
       case int.parse(n_str), int.parse(k_str) {
         Ok(n), Ok(k) -> {
-          // For small problems (n <= 20), use verbose sequential processing
-          // For larger problems, use parallel actor model
-          case n <= 20 {
+          // Use parallel processing for all problems to ensure proper CPU/REAL ratio measurement
+          // Only use sequential for very small problems (n <= 5) for demonstration
+          case n <= 5 {
             True -> process_sequential(n, k)
             False -> {
-              // Use smaller work unit size to ensure multiple workers and true parallelism
+              // Always use parallel processing with appropriate work unit sizes
               let work_unit_size = case n > 10000 {
                 True -> 2000  // Larger chunks for very big problems
-                False -> 100  // Smaller chunks to force multiple workers
+                False -> case n > 1000 {
+                  True -> 500   // Medium chunks for medium problems  
+                  False -> 50   // Small chunks to ensure multiple workers even for small N
+                }
               }
               
               case distribute_work(n, k, work_unit_size) {
